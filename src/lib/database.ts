@@ -203,6 +203,11 @@ export const requestOperations = {
     return stmt.get(songId)
   },
 
+  findById: (id: number) => {
+    const stmt = db.prepare('SELECT * FROM requests WHERE id = ?')
+    return stmt.get(id)
+  },
+
   findAll: () => {
     const stmt = db.prepare(`
       SELECT r.*, u.username, u.profile_picture, s.title, s.artist, s.genius_url
@@ -232,6 +237,11 @@ export const requestOperations = {
       WHERE id = ?
     `)
     return stmt.run(status, id)
+  },
+
+  delete: (id: number) => {
+    const stmt = db.prepare('DELETE FROM requests WHERE id = ?')
+    return stmt.run(id)
   },
 
   addBoost: (requestId: number, userId: number, creditsAmount: number) => {
