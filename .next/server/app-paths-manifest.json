@@ -1,0 +1,8 @@
+{
+  "/api/songs/search/route": "app/api/songs/search/route.js",
+  "/api/video-request/[id]/boost/route": "app/api/video-request/[id]/boost/route.js",
+  "/api/video-request/route": "app/api/video-request/route.js",
+  "/page": "app/page.js",
+  "/requests/page": "app/requests/page.js",
+  "/video-request/page": "app/video-request/page.js"
+}
