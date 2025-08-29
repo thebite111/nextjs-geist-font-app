@@ -1,15 +1,20 @@
 import nodemailer from 'nodemailer'
 
+// Check if we're in development mode or missing email credentials
+const isDevelopment = process.env.NODE_ENV === 'development' || !process.env.SMTP_USER || !process.env.SMTP_PASS
+
 // Email configuration
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-})
+const transporter = isDevelopment 
+  ? null // Don't create transporter in development
+  : nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    })
 
 export const sendVerificationEmail = async (email: string, username: string, token: string) => {
   const verificationUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8000'}/verify-email?token=${token}`
@@ -22,27 +27,27 @@ export const sendVerificationEmail = async (email: string, username: string, tok
       <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
         <div style="text-align: center; margin-bottom: 30px;">
           <div style="width: 60px; height: 60px; background: #3b82f6; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-            <span style="color: white; font-size: 24px; font-weight: bold;">D</span>
+            <span style="color: white; font-size: 24px; font-weight: bold;">K</span>
           </div>
-          <h1 style="color: #1f2937; margin: 0;">Welcome to K-Pop Forms!</h1>
+          <h1 style="color: #1f2937; margin: 0;">Welcome to KPOPFORMS!</h1>
         </div>
         
         <div style="background: #f9fafb; padding: 30px; border-radius: 8px; margin-bottom: 30px;">
           <h2 style="color: #1f2937; margin-top: 0;">Hi ${username}!</h2>
           <p style="color: #6b7280; line-height: 1.6;">
-            Thank you for signing up for K-Pop Forms! To complete your registration and start submitting video requests, please verify your email address.
+            Thank you for signing up for KPOPFORMS! To complete your registration and start submitting video requests, please verify your email address.
           </p>
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${verificationUrl}" 
-               style="background: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">
+               style="background: #7c3aed; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 500;">
               Verify Email Address
             </a>
           </div>
           
           <p style="color: #9ca3af; font-size: 14px; margin-bottom: 0;">
             If the button doesn't work, copy and paste this link into your browser:<br>
-            <a href="${verificationUrl}" style="color: #3b82f6; word-break: break-all;">${verificationUrl}</a>
+            <a href="${verificationUrl}" style="color: #7c3aed; word-break: break-all;">${verificationUrl}</a>
           </p>
         </div>
         
@@ -54,8 +59,18 @@ export const sendVerificationEmail = async (email: string, username: string, tok
     `,
   }
 
+  // In development or without SMTP credentials, log email to console
+  if (isDevelopment) {
+    console.log('\n=== EMAIL VERIFICATION (Development Mode) ===')
+    console.log(`To: ${email}`)
+    console.log(`Subject: ${mailOptions.subject}`)
+    console.log(`Verification URL: ${verificationUrl}`)
+    console.log('===============================================\n')
+    return { success: true, developmentMode: true }
+  }
+
   try {
-    await transporter.sendMail(mailOptions)
+    await transporter!.sendMail(mailOptions)
     return { success: true }
   } catch (error) {
     console.error('Email sending failed:', error)
@@ -69,12 +84,12 @@ export const sendPasswordResetEmail = async (email: string, username: string, to
   const mailOptions = {
     from: process.env.SMTP_FROM || 'noreply@kpopforms.com',
     to: email,
-    subject: 'Reset Your Password - K-Pop Forms',
+    subject: 'Reset Your Password - KPOPFORMS',
     html: `
       <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <div style="width: 60px; height: 60px; background: #3b82f6; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-            <span style="color: white; font-size: 24px; font-weight: bold;">D</span>
+          <div style="width: 60px; height: 60px; background: #7c3aed; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <span style="color: white; font-size: 24px; font-weight: bold;">K</span>
           </div>
           <h1 style="color: #1f2937; margin: 0;">Password Reset Request</h1>
         </div>
@@ -82,7 +97,7 @@ export const sendPasswordResetEmail = async (email: string, username: string, to
         <div style="background: #f9fafb; padding: 30px; border-radius: 8px; margin-bottom: 30px;">
           <h2 style="color: #1f2937; margin-top: 0;">Hi ${username}!</h2>
           <p style="color: #6b7280; line-height: 1.6;">
-            We received a request to reset your password for your K-Pop Forms account. Click the button below to create a new password.
+            We received a request to reset your password for your KPOPFORMS account. Click the button below to create a new password.
           </p>
           
           <div style="text-align: center; margin: 30px 0;">
@@ -106,8 +121,18 @@ export const sendPasswordResetEmail = async (email: string, username: string, to
     `,
   }
 
+  // In development or without SMTP credentials, log email to console
+  if (isDevelopment) {
+    console.log('\n=== PASSWORD RESET EMAIL (Development Mode) ===')
+    console.log(`To: ${email}`)
+    console.log(`Subject: ${mailOptions.subject}`)
+    console.log(`Reset URL: ${resetUrl}`)
+    console.log('===============================================\n')
+    return { success: true, developmentMode: true }
+  }
+
   try {
-    await transporter.sendMail(mailOptions)
+    await transporter!.sendMail(mailOptions)
     return { success: true }
   } catch (error) {
     console.error('Email sending failed:', error)
